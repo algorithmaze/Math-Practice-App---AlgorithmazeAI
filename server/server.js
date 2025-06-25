@@ -20,8 +20,8 @@ const progressRoutes = require('./routes/progressRoutes'); // Import progress ro
 app.use('/api/progress', progressRoutes); // Mount progress routes
 const syllabusRoutes = require('./routes/syllabusRoutes'); // Import syllabus routes
 app.use('/api/syllabus', syllabusRoutes); // Mount syllabus routes
-// Placeholder for other routes
-// app.use('/api/questions', questionRoutes);
+const questionRoutes = require('./routes/questionRoutes'); // Import question routes
+app.use('/api/questions', questionRoutes); // Mount question routes
 
 
 // Basic error handling middleware (example)

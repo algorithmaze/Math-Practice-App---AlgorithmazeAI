@@ -8,7 +8,11 @@
     "dev": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "seed:syllabus": "node seeders/syllabusSeeder.js",
-    "seed:syllabus:destroy": "node seeders/syllabusSeeder.js -d"
+    "seed:syllabus:destroy": "node seeders/syllabusSeeder.js -d",
+    "seed:questions": "node seeders/questionSeeder.js",
+    "seed:questions:destroy": "node seeders/questionSeeder.js -d",
+    "seed:all": "npm run seed:syllabus && npm run seed:questions",
+    "seed:all:destroy": "npm run seed:questions:destroy && npm run seed:syllabus:destroy"
   },
   "keywords": [],
   "author": "",

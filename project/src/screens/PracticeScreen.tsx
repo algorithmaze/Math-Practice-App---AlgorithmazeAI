@@ -112,30 +112,40 @@ const PracticeScreen: React.FC = () => {
       }
       setTopicName(foundTopicName);
 
-      // 3. Filter questions from local JSON based on fetched/current difficulty
-      // TODO: This part will change when questions are fetched from backend API
-      const questionsForDifficulty = sampleQuestionsData.filter(
-        q => q.topic_id === topicId && q.difficulty_level === difficultyToFetch.toUpperCase()
-      ) as PracticeQuestion[];
+      // 3. Fetch questions from backend API based on fetched/current difficulty
+      try {
+        const questionsResponse = await axios.get(`/api/questions/topic/${topicId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          params: { difficulty: difficultyToFetch.toUpperCase() }
+        });
 
-      if (questionsForDifficulty.length > 0) {
-        // For now, pick the first question.
-        // Later, add logic to pick a question not recently attempted, or randomly.
-        setCurrentQuestion(questionsForDifficulty[0]);
-      } else {
-        // No questions for this difficulty. Try to find for ANY difficulty for this topic.
-        const anyQuestionsForTopic = sampleQuestionsData.filter(
-            q => q.topic_id === topicId
-        ) as PracticeQuestion[];
-        if (anyQuestionsForTopic.length > 0) {
-            setCurrentQuestion(anyQuestionsForTopic[0]); // Fallback to first available
-            // Optionally set a message that desired difficulty wasn't available
+        const fetchedQuestions: PracticeQuestion[] = questionsResponse.data;
+
+        if (fetchedQuestions.length > 0) {
+          // For now, pick the first question.
+          // Future: implement logic to pick a question not recently attempted, or randomly from the fetched list.
+          // Also, consider what happens if a user answers all questions of a certain difficulty for a topic.
+          setCurrentQuestion(fetchedQuestions[0]);
         } else {
-            setCurrentQuestion(null); // No questions found for this topic at all
+          // No questions for this specific difficulty.
+          // Optionally, try fetching without difficulty filter or try another difficulty.
+          // For now, indicate no questions for this setting.
+          console.warn(`No questions found for topic ${topicId} at difficulty ${difficultyToFetch}`);
+          setCurrentQuestion(null);
         }
+      } catch (questionFetchError: any) {
+        console.error('Error fetching questions from API:', questionFetchError);
+        if (questionFetchError.response && questionFetchError.response.status === 401) {
+            navigate('/login', { state: { message: "Session expired. Please login." } });
+            return;
+        }
+        // If fetching questions fails, but topic progress was okay, still show topic name but no question.
+        setCurrentQuestion(null);
+        // setError could be used here to display a more specific error about questions not loading.
       }
-    } catch (error: any) {
-      console.error('Error loading question and topic info:', error);
+
+    } catch (error: any) { // This outer catch is for the progress API call primarily
+      console.error('Error in initial data loading (progress/topic name):', error);
       if (error.response && error.response.status === 401) {
         navigate('/login', { state: { message: "Session expired. Please login." } });
         return;
