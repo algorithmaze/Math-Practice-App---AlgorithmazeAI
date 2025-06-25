@@ -1,0 +1,58 @@
+[
+  {
+    "id": "unit1",
+    "name": "Number Systems",
+    "topics": [
+      { "id": "topic1a", "name": "Real Numbers", "description": "Euclid's division lemma, Fundamental Theorem of Arithmetic, proving irrationality, decimal expansions." }
+    ]
+  },
+  {
+    "id": "unit2",
+    "name": "Algebra",
+    "topics": [
+      { "id": "topic2a", "name": "Polynomials", "description": "Zeros of a polynomial, relationship between zeros and coefficients." },
+      { "id": "topic2b", "name": "Pair of Linear Equations in Two Variables", "description": "Graphical method, algebraic methods (substitution, elimination), consistency." },
+      { "id": "topic2c", "name": "Quadratic Equations", "description": "Standard form, solutions by factorization and quadratic formula, nature of roots." },
+      { "id": "topic2d", "name": "Arithmetic Progressions", "description": "nth term, sum of first n terms." }
+    ]
+  },
+  {
+    "id": "unit3",
+    "name": "Coordinate Geometry",
+    "topics": [
+      { "id": "topic3a", "name": "Lines (In two-dimensions)", "description": "Distance formula, section formula, area of a triangle." }
+    ]
+  },
+  {
+    "id": "unit4",
+    "name": "Geometry",
+    "topics": [
+      { "id": "topic4a", "name": "Triangles", "description": "Similarity, BPT, Pythagoras theorem." },
+      { "id": "topic4b", "name": "Circles", "description": "Tangents to a circle, properties of tangents." },
+      { "id": "topic4c", "name": "Constructions", "description": "Division of a line segment, tangents to a circle." }
+    ]
+  },
+  {
+    "id": "unit5",
+    "name": "Trigonometry",
+    "topics": [
+      { "id": "topic5a", "name": "Introduction to Trigonometry", "description": "Trigonometric ratios, identities, heights and distances." }
+    ]
+  },
+  {
+    "id": "unit6",
+    "name": "Mensuration",
+    "topics": [
+      { "id": "topic6a", "name": "Areas Related to Circles", "description": "Area of sector and segment." },
+      { "id": "topic6b", "name": "Surface Areas and Volumes", "description": "Combination of solids." }
+    ]
+  },
+  {
+    "id": "unit7",
+    "name": "Statistics and Probability",
+    "topics": [
+      { "id": "topic7a", "name": "Statistics", "description": "Mean, median, mode of grouped data, ogives." },
+      { "id": "topic7b", "name": "Probability", "description": "Classical definition of probability." }
+    ]
+  }
+]

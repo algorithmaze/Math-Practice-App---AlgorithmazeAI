@@ -1,104 +1,59 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Play, BookOpen } from 'lucide-react';
-import axios from 'axios';
+// import axios from 'axios'; // Not needed for local syllabus data
+import syllabusData from '../data/syllabus.json'; // Import local syllabus data
 
-interface Topic {
-  topic_id: number;
-  topic_name: string;
-  mastery_score: number;
-  questions_completed: number;
-  total_questions: number;
+interface SyllabusTopic {
+  id: string;
+  name: string;
+  description?: string; // from syllabus.json
+  // mastery_score, questions_completed, total_questions can be added later
 }
 
 const TopicListScreen: React.FC = () => {
   const { unitId } = useParams<{ unitId: string }>();
   const navigate = useNavigate();
-  const [topics, setTopics] = useState<Topic[]>([]);
+  const [topics, setTopics] = useState<SyllabusTopic[]>([]);
   const [unitName, setUnitName] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchTopics();
+    loadTopicsForUnit();
   }, [unitId]);
 
-  const fetchTopics = async () => {
-    try {
-      const response = await axios.get(`/api/topics/${unitId}`);
-      setTopics(response.data.topics);
-      setUnitName(response.data.unit_name);
-    } catch (error) {
-      console.error('Error fetching topics:', error);
-      // Mock data for development
-      const mockTopics = getTopicsForUnit(parseInt(unitId || '1'));
-      setTopics(mockTopics);
-      setUnitName(getUnitName(parseInt(unitId || '1')));
-    } finally {
-      setLoading(false);
+  const loadTopicsForUnit = () => {
+    setLoading(true);
+    const currentUnit = syllabusData.find(unit => unit.id === unitId);
+
+    if (currentUnit) {
+      setUnitName(currentUnit.name);
+      // Map topics to ensure they fit SyllabusTopic structure, though they already do.
+      setTopics(currentUnit.topics.map(topic => ({
+        id: topic.id,
+        name: topic.name,
+        description: topic.description
+      })));
+    } else {
+      setUnitName('Unit not found');
+      setTopics([]);
+      // Optionally navigate back or show an error
+      // navigate('/dashboard');
     }
+    setLoading(false);
   };
 
-  const getUnitName = (unitId: number) => {
-    const units = [
-      'Number Systems',
-      'Algebra', 
-      'Coordinate Geometry',
-      'Geometry',
-      'Trigonometry',
-      'Mensuration',
-      'Statistics and Probability'
-    ];
-    return units[unitId - 1] || 'Unknown Unit';
-  };
-
-  const getTopicsForUnit = (unitId: number): Topic[] => {
-    const topicsByUnit: { [key: number]: Topic[] } = {
-      1: [
-        { topic_id: 1, topic_name: 'Real Numbers', mastery_score: 0.8, questions_completed: 24, total_questions: 30 },
-        { topic_id: 2, topic_name: 'Irrational Numbers', mastery_score: 0.6, questions_completed: 18, total_questions: 30 },
-        { topic_id: 3, topic_name: 'Rational Numbers', mastery_score: 0.9, questions_completed: 27, total_questions: 30 }
-      ],
-      2: [
-        { topic_id: 4, topic_name: 'Polynomials', mastery_score: 0.7, questions_completed: 21, total_questions: 30 },
-        { topic_id: 5, topic_name: 'Linear Equations in Two Variables', mastery_score: 0.5, questions_completed: 15, total_questions: 30 },
-        { topic_id: 6, topic_name: 'Quadratic Equations', mastery_score: 0.4, questions_completed: 12, total_questions: 30 },
-        { topic_id: 7, topic_name: 'Arithmetic Progressions', mastery_score: 0.6, questions_completed: 18, total_questions: 30 }
-      ],
-      3: [
-        { topic_id: 8, topic_name: 'Lines (In two-dimensions)', mastery_score: 0.3, questions_completed: 9, total_questions: 30 },
-        { topic_id: 9, topic_name: 'Distance Formula', mastery_score: 0.5, questions_completed: 15, total_questions: 30 },
-        { topic_id: 10, topic_name: 'Section Formula', mastery_score: 0.4, questions_completed: 12, total_questions: 30 }
-      ],
-      4: [
-        { topic_id: 11, topic_name: 'Triangles', mastery_score: 0.2, questions_completed: 6, total_questions: 30 },
-        { topic_id: 12, topic_name: 'Circles', mastery_score: 0.3, questions_completed: 9, total_questions: 30 },
-        { topic_id: 13, topic_name: 'Constructions', mastery_score: 0.4, questions_completed: 12, total_questions: 30 }
-      ],
-      5: [
-        { topic_id: 14, topic_name: 'Introduction to Trigonometry', mastery_score: 0.1, questions_completed: 3, total_questions: 30 },
-        { topic_id: 15, topic_name: 'Trigonometric Identities', mastery_score: 0.2, questions_completed: 6, total_questions: 30 },
-        { topic_id: 16, topic_name: 'Heights and Distances', mastery_score: 0.3, questions_completed: 9, total_questions: 30 }
-      ],
-      6: [
-        { topic_id: 17, topic_name: 'Areas Related to Circles', mastery_score: 0.1, questions_completed: 3, total_questions: 30 },
-        { topic_id: 18, topic_name: 'Surface Areas and Volumes', mastery_score: 0.1, questions_completed: 3, total_questions: 30 }
-      ],
-      7: [
-        { topic_id: 19, topic_name: 'Statistics', mastery_score: 0.05, questions_completed: 1, total_questions: 30 },
-        { topic_id: 20, topic_name: 'Probability', mastery_score: 0.05, questions_completed: 1, total_questions: 30 }
-      ]
-    };
-    return topicsByUnit[unitId] || [];
-  };
-
-  const getProgressColor = (score: number) => {
+  // These functions can be simplified or removed if mastery is not shown yet
+  const getProgressColor = (score?: number) => {
+    if (score === undefined) return 'bg-gray-300';
     if (score >= 0.8) return 'bg-green-500';
     if (score >= 0.6) return 'bg-blue-500';
     if (score >= 0.4) return 'bg-yellow-500';
     return 'bg-red-500';
   };
 
-  const getMasteryText = (score: number) => {
+  const getMasteryText = (score?: number) => {
+    if (score === undefined) return 'Not Started';
     if (score >= 0.8) return 'Mastered';
     if (score >= 0.6) return 'Good';
     if (score >= 0.4) return 'Learning';
@@ -139,59 +94,49 @@ const TopicListScreen: React.FC = () => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Unit Overview */}
+        {/* Unit Overview - Temporarily simplified as mastery_score etc. are not available */}
         <div className="card p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-6"> {/* Simplified to one column */}
             <div className="text-center">
               <p className="text-3xl font-bold text-blue-600">{topics.length}</p>
-              <p className="text-gray-600">Topics</p>
+              <p className="text-gray-600">Topics Available</p>
             </div>
-            <div className="text-center">
-              <p className="text-3xl font-bold text-green-600">
-                {topics.filter(t => t.mastery_score >= 0.8).length}
-              </p>
-              <p className="text-gray-600">Mastered</p>
-            </div>
-            <div className="text-center">
-              <p className="text-3xl font-bold text-yellow-600">
-                {Math.round((topics.reduce((sum, t) => sum + t.mastery_score, 0) / topics.length) * 100)}%
-              </p>
-              <p className="text-gray-600">Overall Progress</p>
-            </div>
+            {/* Other stats removed for now */}
           </div>
         </div>
 
         {/* Topics List */}
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Topics</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Topics in {unitName}</h2>
+          {topics.length === 0 && !loading && <p>No topics found for this unit.</p>}
           {topics.map((topic) => (
-            <div key={topic.topic_id} className="card p-6">
+            <div key={topic.id} className="card p-6"> {/* Use topic.id */}
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-3">
+                  <div className="flex items-center space-x-3 mb-1">
                     <h3 className="text-lg font-semibold text-gray-900">
-                      {topic.topic_name}
+                      {topic.name} {/* Use topic.name */}
                     </h3>
+                    {/* Mastery text removed for now */}
+                    {/*
                     <span className={`px-3 py-1 rounded-full text-xs font-medium text-white ${getProgressColor(topic.mastery_score)}`}>
                       {getMasteryText(topic.mastery_score)}
                     </span>
+                    */}
                   </div>
+                  {topic.description && (
+                    <p className="text-sm text-gray-500 mb-3">{topic.description}</p>
+                  )}
                   
-                  <div className="flex items-center space-x-6 text-sm text-gray-600 mb-3">
-                    <span>{topic.questions_completed}/{topic.total_questions} questions completed</span>
-                    <span>{Math.round(topic.mastery_score * 100)}% mastery</span>
-                  </div>
-                  
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full progress-bar ${getProgressColor(topic.mastery_score)}`}
-                      style={{ width: `${topic.mastery_score * 100}%` }}
-                    ></div>
-                  </div>
+                  {/* Questions completed, mastery %, progress bar removed for now */}
+                  {/*
+                  <div className="flex items-center space-x-6 text-sm text-gray-600 mb-3"> ... </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2"> ... </div>
+                  */}
                 </div>
                 
                 <Link
-                  to={`/practice/${topic.topic_id}`}
+                  to={`/practice/${topic.id}`} // Use topic.id
                   className="ml-6 flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   <Play className="w-5 h-5" />

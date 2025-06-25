@@ -9,7 +9,7 @@ const RegisterScreen: React.FC = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    studyMode: 'Standard'
+    // studyMode: 'Standard' // Removed as not in backend User model
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -34,21 +34,25 @@ const RegisterScreen: React.FC = () => {
     }
 
     try {
-      const response = await axios.post('/api/users/register', {
+      // const response = await axios.post('/api/users/register', { // Original
+      const response = await axios.post('http://localhost:5001/api/auth/register', {
         username: formData.username,
         email: formData.email,
         password: formData.password,
-        study_mode: formData.studyMode
+        // study_mode: formData.studyMode // Not in current backend User model
       });
       
-      // Store user data and redirect
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+      // Store token and user data (adjust based on actual backend response)
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify({ _id: response.data._id, username: response.data.username, email: response.data.email }));
+      axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`; // Set auth header for subsequent requests
       navigate('/dashboard');
-    } catch (error) {
-      console.error('Registration error:', error);
-      setError('Registration failed. Please try again.');
-      // For development, allow bypass
-      navigate('/dashboard');
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      const message = err.response?.data?.message || 'Registration failed. Please try again.';
+      setError(message);
+      // Remove development bypass for actual testing
+      // navigate('/dashboard');
     } finally {
       setLoading(false);
     }
@@ -113,20 +117,20 @@ const RegisterScreen: React.FC = () => {
               </div>
             </div>
 
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Study Mode
               </label>
               <select
                 name="studyMode"
-                value={formData.studyMode}
+                // value={formData.studyMode} // formData.studyMode is removed
                 onChange={handleInputChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               >
                 <option value="Basic">Basic (Code 241)</option>
                 <option value="Standard">Standard (Code 041)</option>
               </select>
-            </div>
+            </div> */}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

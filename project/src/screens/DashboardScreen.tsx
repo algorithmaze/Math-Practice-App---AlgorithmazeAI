@@ -1,59 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Trophy, Target, User } from 'lucide-react';
-import axios from 'axios';
+// import axios from 'axios'; // Not needed for local syllabus data for now
+import syllabusData from '../data/syllabus.json'; // Import local syllabus data
 
-interface Unit {
-  unit_id: number;
-  unit_name: string;
-  mastery_score: number;
+// Interface for syllabus unit from syllabus.json
+interface SyllabusUnit {
+  id: string;
+  name: string;
+  // mastery_score can be added later from user progress data
+  // topics: Array<{ id: string; name: string; description: string; }>; // Not needed directly in Dashboard unit list
 }
 
 const DashboardScreen: React.FC = () => {
-  const [units, setUnits] = useState<Unit[]>([]);
+  const [units, setUnits] = useState<SyllabusUnit[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userPoints, setUserPoints] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(1);
+  // User stats can be re-integrated later with backend calls
+  // const [userPoints, setUserPoints] = useState(0);
+  // const [currentLevel, setCurrentLevel] = useState(1);
 
   useEffect(() => {
-    fetchDashboardData();
+    loadSyllabusUnits();
   }, []);
 
-  const fetchDashboardData = async () => {
-    try {
-      // Mock user ID for now - in real app this would come from authentication
-      const userId = 1;
-      const response = await axios.get(`/api/dashboard/${userId}`);
-      setUnits(response.data.units || []);
-      setUserPoints(response.data.points || 0);
-      setCurrentLevel(response.data.level || 1);
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-      // Mock data for development
-      setUnits([
-        { unit_id: 1, unit_name: 'Number Systems', mastery_score: 0.75 },
-        { unit_id: 2, unit_name: 'Algebra', mastery_score: 0.60 },
-        { unit_id: 3, unit_name: 'Coordinate Geometry', mastery_score: 0.45 },
-        { unit_id: 4, unit_name: 'Geometry', mastery_score: 0.30 },
-        { unit_id: 5, unit_name: 'Trigonometry', mastery_score: 0.20 },
-        { unit_id: 6, unit_name: 'Mensuration', mastery_score: 0.10 },
-        { unit_id: 7, unit_name: 'Statistics and Probability', mastery_score: 0.05 }
-      ]);
-      setUserPoints(1250);
-      setCurrentLevel(3);
-    } finally {
-      setLoading(false);
-    }
+  const loadSyllabusUnits = () => {
+    // For now, just map the ID and name. Mastery score will be 0 or fetched later.
+    const formattedUnits = syllabusData.map(unit => ({
+      id: unit.id,
+      name: unit.name,
+      // mastery_score: 0, // Default mastery score, or remove if not displaying yet
+    }));
+    setUnits(formattedUnits);
+    setLoading(false);
+    // setUserPoints(1250); // Mock data removed for now
+    // setCurrentLevel(3); // Mock data removed for now
   };
 
-  const getProgressColor = (score: number) => {
+  // These functions can be simplified or removed if mastery is not shown yet
+  const getProgressColor = (score?: number) => {
+    if (score === undefined) return 'bg-gray-300'; // Default for no score
     if (score >= 0.8) return 'bg-green-500';
     if (score >= 0.6) return 'bg-blue-500';
     if (score >= 0.4) return 'bg-yellow-500';
     return 'bg-red-500';
   };
 
-  const getMasteryText = (score: number) => {
+  const getMasteryText = (score?: number) => {
+    if (score === undefined) return 'Not Started'; // Default for no score
     if (score >= 0.8) return 'Mastered';
     if (score >= 0.6) return 'Good';
     if (score >= 0.4) return 'Learning';
@@ -92,57 +85,21 @@ const DashboardScreen: React.FC = () => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Stats Cards */}
+        {/* Stats Cards - Temporarily simplified or commented out as userPoints/currentLevel are not fetched */}
+        {/*
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="card p-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <Trophy className="w-6 h-6 text-yellow-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Total Points</p>
-                <p className="text-2xl font-bold text-gray-900">{userPoints.toLocaleString()}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="card p-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Target className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Current Level</p>
-                <p className="text-2xl font-bold text-gray-900">{currentLevel}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="card p-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Units Mastered</p>
-                <p className="text-2xl font-bold text-gray-900">{units.filter(u => u.mastery_score >= 0.8).length}</p>
-              </div>
-            </div>
-          </div>
+          <div className="card p-6"> ... Total Points ... </div>
+          <div className="card p-6"> ... Current Level ... </div>
+          <div className="card p-6"> ... Units Mastered ... </div>
         </div>
+        */}
 
-        {/* Daily Challenge */}
+        {/* Daily Challenge - Temporarily simplified or commented out */}
+        {/*
         <div className="card p-6 mb-8 bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-bold mb-2">Daily Challenge</h3>
-              <p className="text-purple-100">Complete 10 questions from any topic to earn bonus points!</p>
-            </div>
-            <button className="bg-white text-purple-600 px-6 py-3 rounded-lg font-medium hover:bg-purple-50 transition-colors">
-              Start Challenge
-            </button>
-          </div>
+          ... Daily Challenge content ...
         </div>
+        */}
 
         {/* Units Grid */}
         <div>
@@ -150,19 +107,24 @@ const DashboardScreen: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {units.map((unit) => (
               <Link
-                key={unit.unit_id}
-                to={`/topics/${unit.unit_id}`}
+                key={unit.id} // Use unit.id from syllabusData
+                to={`/topics/${unit.id}`} // Pass unit.id to TopicListScreen
                 className="card p-6 group"
               >
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                    {unit.unit_name}
+                    {unit.name} {/* Use unit.name from syllabusData */}
                   </h3>
+                  {/* Mastery score display removed for now */}
+                  {/*
                   <span className={`px-3 py-1 rounded-full text-xs font-medium text-white ${getProgressColor(unit.mastery_score)}`}>
                     {getMasteryText(unit.mastery_score)}
                   </span>
+                  */}
                 </div>
                 
+                {/* Progress bar removed for now */}
+                {/*
                 <div className="mb-4">
                   <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
                     <span>Progress</span>
@@ -175,9 +137,10 @@ const DashboardScreen: React.FC = () => {
                     ></div>
                   </div>
                 </div>
+                */}
                 
                 <p className="text-sm text-gray-600">
-                  Click to practice topics in this unit
+                  Click to view topics in this unit.
                 </p>
               </Link>
             ))}
