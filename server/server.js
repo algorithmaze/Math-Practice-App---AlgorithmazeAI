@@ -18,8 +18,9 @@ app.use(express.json()); // To accept JSON data in req.body
 app.use('/api/auth', authRoutes);
 const progressRoutes = require('./routes/progressRoutes'); // Import progress routes
 app.use('/api/progress', progressRoutes); // Mount progress routes
+const syllabusRoutes = require('./routes/syllabusRoutes'); // Import syllabus routes
+app.use('/api/syllabus', syllabusRoutes); // Mount syllabus routes
 // Placeholder for other routes
-// app.use('/api/syllabus', syllabusRoutes);
 // app.use('/api/questions', questionRoutes);
 
 
