@@ -16,10 +16,12 @@ app.use(express.json()); // To accept JSON data in req.body
 
 // Mount routers
 app.use('/api/auth', authRoutes);
+const progressRoutes = require('./routes/progressRoutes'); // Import progress routes
+app.use('/api/progress', progressRoutes); // Mount progress routes
 // Placeholder for other routes
 // app.use('/api/syllabus', syllabusRoutes);
 // app.use('/api/questions', questionRoutes);
-// app.use('/api/progress', progressRoutes);
+
 
 // Basic error handling middleware (example)
 app.use((err, req, res, next) => {

@@ -4,7 +4,7 @@ import { ArrowLeft, Clock, Target, AlertCircle, Image as ImageIcon } from 'lucid
 // QuestionDisplay and OptionButton might need adjustments or can be used if compatible
 import QuestionDisplay from '../components/QuestionDisplay'; // Assuming it can handle simple text
 import OptionButton from '../components/OptionButton';
-// import axios from 'axios'; // Not needed for local data
+import axios from 'axios'; // Needed for API calls
 
 import 'katex/dist/katex.min.css'; // Import KaTeX CSS
 import { InlineMath, BlockMath } from 'react-katex'; // Import KaTeX components
@@ -42,7 +42,10 @@ const PracticeScreen: React.FC = () => {
   const [topicName, setTopicName] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null); // Store index for MCQ
+  const [currentDifficultyForTopic, setCurrentDifficultyForTopic] = useState<"EASY" | "MEDIUM" | "HARD">("EASY");
   // const [textInputValue, setTextInputValue] = useState<string>(''); // For TEXT_INPUT
+  const [isSubmitting, setIsSubmitting] = useState(false); // For submit button loading state
+
 
   // Session stats can be simplified for now
   const [sessionStats, setSessionStats] = useState({
@@ -53,53 +56,108 @@ const PracticeScreen: React.FC = () => {
 
   useEffect(() => {
     loadQuestionAndTopicInfo();
-  }, [topicId]);
+  }, [topicId, currentDifficultyForTopic]); // Add currentDifficultyForTopic to re-fetch if it changes externally
 
-  const loadQuestionAndTopicInfo = () => {
+  const loadQuestionAndTopicInfo = async () => {
     setLoading(true);
-
-    // Find topic name
-    let foundTopicName = "Practice"; // Default
-    for (const unit of syllabusData) {
-      const foundTopic = unit.topics.find(t => t.id === topicId);
-      if (foundTopic) {
-        foundTopicName = `${unit.name} - ${foundTopic.name}`;
-        break;
-      }
-    }
-    setTopicName(foundTopicName);
-
-    // Filter questions for the current topic and EASY difficulty (for now)
-    const easyQuestionsForTopic = sampleQuestionsData.filter(
-      q => q.topic_id === topicId && q.difficulty_level === "EASY"
-    ) as PracticeQuestion[]; // Cast to PracticeQuestion[]
-
-    if (easyQuestionsForTopic.length > 0) {
-      // For now, just pick the first easy question
-      // Later, implement logic to pick based on user progress, avoid repetition etc.
-      setCurrentQuestion(easyQuestionsForTopic[0]);
-    } else {
-      setCurrentQuestion(null); // No easy questions found for this topic
-    }
     setSelectedOptionIndex(null);
     // setTextInputValue('');
-    setLoading(false);
+
+    try {
+      // 1. Fetch User Progress for the topic (to get current difficulty)
+      // Ensure token is available (e.g., from localStorage, assuming it's set at login)
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login', { state: { message: "Session expired. Please login again." } });
+        return;
+      }
+
+      let difficultyToFetch = currentDifficultyForTopic; // Use state as default
+
+      // Only fetch progress if not already fetched or if topicId changes.
+      // For simplicity, we fetch it each time for now, or rely on currentDifficultyForTopic state.
+      // A more optimized way would be to fetch it once per topic entry, or if difficulty changes.
+      try {
+        const progressResponse = await axios.get(`/api/progress/topic/${topicId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (progressResponse.data && progressResponse.data.current_difficulty_level) {
+          difficultyToFetch = progressResponse.data.current_difficulty_level;
+          if (currentDifficultyForTopic !== difficultyToFetch) { // Only update if different to avoid loop if already correct
+            setCurrentDifficultyForTopic(difficultyToFetch);
+            // This will cause a re-render. useEffect will then call loadQuestionAndTopicInfo again.
+            // The current execution of loadQuestionAndTopicInfo might proceed with the old 'difficultyToFetch'
+            // if setCurrentDifficultyForTopic is async. Or we can return early and let the re-render handle it.
+            // For simplicity now, let it proceed, the re-render will fix it if it was stale.
+          }
+        }
+      } catch (progressError: any) {
+        if (progressError.response && progressError.response.status === 401) {
+            navigate('/login', { state: { message: "Session expired. Please login." } });
+            return;
+        }
+        console.warn('Could not fetch topic progress, defaulting to current state difficulty:', progressError);
+        // Keep difficultyToFetch as currentDifficultyForTopic from state
+      }
+
+
+      // 2. Find topic name (client-side from syllabusData)
+      let foundTopicName = "Practice";
+      for (const unit of syllabusData) {
+        const foundTopic = unit.topics.find(t => t.id === topicId);
+        if (foundTopic) {
+          foundTopicName = `${unit.name} - ${foundTopic.name}`;
+          break;
+        }
+      }
+      setTopicName(foundTopicName);
+
+      // 3. Filter questions from local JSON based on fetched/current difficulty
+      // TODO: This part will change when questions are fetched from backend API
+      const questionsForDifficulty = sampleQuestionsData.filter(
+        q => q.topic_id === topicId && q.difficulty_level === difficultyToFetch.toUpperCase()
+      ) as PracticeQuestion[];
+
+      if (questionsForDifficulty.length > 0) {
+        // For now, pick the first question.
+        // Later, add logic to pick a question not recently attempted, or randomly.
+        setCurrentQuestion(questionsForDifficulty[0]);
+      } else {
+        // No questions for this difficulty. Try to find for ANY difficulty for this topic.
+        const anyQuestionsForTopic = sampleQuestionsData.filter(
+            q => q.topic_id === topicId
+        ) as PracticeQuestion[];
+        if (anyQuestionsForTopic.length > 0) {
+            setCurrentQuestion(anyQuestionsForTopic[0]); // Fallback to first available
+            // Optionally set a message that desired difficulty wasn't available
+        } else {
+            setCurrentQuestion(null); // No questions found for this topic at all
+        }
+      }
+    } catch (error: any) {
+      console.error('Error loading question and topic info:', error);
+      if (error.response && error.response.status === 401) {
+        navigate('/login', { state: { message: "Session expired. Please login." } });
+        return;
+      }
+      setCurrentQuestion(null); // Ensure no stale question is shown
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleOptionSelect = (index: number) => {
     setSelectedOptionIndex(index);
   };
 
-  const handleSubmitAnswer = () => {
+  const handleSubmitAnswer = async () => {
     if (!currentQuestion) return;
     if (currentQuestion.question_type === "MCQ" && selectedOptionIndex === null) return;
-    // Add similar check for TEXT_INPUT if textInputValue is empty
+    // Add similar check for TEXT_INPUT if textInputValue is empty (when implemented)
 
-    // For now, just log and reload/go to next (simplified)
-    console.log("Selected option index:", selectedOptionIndex);
-    // console.log("Text input value:", textInputValue);
+    setIsSubmitting(true);
 
-    // --- Answer Checking Logic ---
+    // --- Determine correctness (still client-side for now) ---
     let isCorrect = false;
     let userAnswerText = "";
     let correctAnswerText = "";
@@ -111,41 +169,71 @@ const PracticeScreen: React.FC = () => {
       const correctOpt = currentQuestion.options.find(opt => opt.is_correct === true);
       correctAnswerText = correctOpt ? correctOpt.text : "N/A";
     } else if (currentQuestion.question_type === "TEXT_INPUT") {
-      // Placeholder for TEXT_INPUT - assuming textInputValue state exists and is populated
-      // userAnswerText = textInputValue;
-      // isCorrect = textInputValue.toLowerCase() === currentQuestion.answer?.correct_answer_text?.toLowerCase();
-      // correctAnswerText = currentQuestion.answer?.correct_answer_text || "N/A";
-      userAnswerText = "[Text input not fully implemented]";
+      userAnswerText = "[Text input not fully implemented]"; // Placeholder
       correctAnswerText = currentQuestion.answer?.correct_answer_text || "[Correct text not available]";
-      isCorrect = false; // Default for now
+      isCorrect = false; // Placeholder
     }
-    // Add similar logic for ASSERTION_REASONING if options-based, or other types
+    // TODO: Add logic for other question types if necessary
 
-    // --- End Answer Checking Logic ---
-
-    setSessionStats(prev => ({
-      questionsAnswered: prev.questionsAnswered + 1,
-      correctAnswers: prev.correctAnswers + (isCorrect ? 1 : 0),
-      currentStreak: isCorrect ? prev.currentStreak + 1 : 0
-    }));
-
-    navigate('/feedback', {
-      state: {
-        isCorrect,
-        explanation: currentQuestion.answer?.explanation || "No explanation available.",
-        questionText: currentQuestion.question_text, // Pass question text directly
-        userAnswer: userAnswerText,
-        correctAnswer: correctAnswerText,
-        questionType: currentQuestion.question_type,
-        options: currentQuestion.options, // For MCQs, to show choices again if needed
-        selectedOptionIndex: selectedOptionIndex, // For MCQs
-        topicId
+    // --- API Call to submit answer and update progress ---
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login', { state: { message: "Session expired. Please login again." } });
+        setIsSubmitting(false);
+        return;
       }
-    });
 
-    // For this step, we are not implementing "next question" logic yet.
-    // Reloading the same question by calling loadQuestionAndTopicInfo() after feedback
-    // would be one way, or FeedbackScreen can navigate back.
+      const response = await axios.post('/api/progress/submit-answer', {
+        topicId: currentQuestion.topic_id, // ensure topicId from currentQuestion is used
+        questionId: currentQuestion.id,
+        isCorrect: isCorrect,
+        difficultyLevelAttempted: currentQuestion.difficulty_level,
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.data && response.data.next_difficulty_level) {
+        const nextDifficulty = response.data.next_difficulty_level.toUpperCase() as "EASY" | "MEDIUM" | "HARD";
+        if (currentDifficultyForTopic !== nextDifficulty) {
+          setCurrentDifficultyForTopic(nextDifficulty);
+          // This will trigger useEffect to call loadQuestionAndTopicInfo,
+          // which will then fetch a new question based on the new difficulty.
+        }
+      }
+
+      // Update session stats (could also come from backend if more complex)
+      setSessionStats(prev => ({
+        questionsAnswered: prev.questionsAnswered + 1,
+        correctAnswers: prev.correctAnswers + (isCorrect ? 1 : 0),
+        currentStreak: isCorrect ? prev.currentStreak + 1 : 0 // Basic streak logic
+      }));
+
+      navigate('/feedback', {
+        state: {
+          isCorrect,
+          explanation: currentQuestion.answer?.explanation || "No explanation available.",
+          questionText: currentQuestion.question_text,
+          userAnswer: userAnswerText,
+          correctAnswer: correctAnswerText,
+          questionType: currentQuestion.question_type,
+          options: currentQuestion.options,
+          selectedOptionIndex: selectedOptionIndex,
+          topicId: currentQuestion.topic_id
+        }
+      });
+
+    } catch (error: any) {
+      console.error('Error submitting answer:', error);
+      if (error.response && error.response.status === 401) {
+        navigate('/login', { state: { message: "Session expired. Please login." } });
+      } else {
+        // Show a generic error to the user on the practice screen itself, or navigate to feedback with error
+        alert("Failed to submit answer. Please try again. " + (error.response?.data?.message || error.message));
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
 
@@ -292,10 +380,10 @@ const PracticeScreen: React.FC = () => {
           <div className="flex justify-center mt-6">
             <button
               onClick={handleSubmitAnswer}
-              disabled={currentQuestion.question_type === "MCQ" && selectedOptionIndex === null}
+              disabled={(currentQuestion.question_type === "MCQ" && selectedOptionIndex === null) || isSubmitting}
               className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed min-w-[180px] py-2.5 px-6 text-base"
             >
-              Submit Answer
+              {isSubmitting ? 'Submitting...' : 'Submit Answer'}
             </button>
           </div>
         </div>

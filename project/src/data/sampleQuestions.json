@@ -17,6 +17,35 @@
     "tags": ["zeros of polynomial", "coefficients"]
   },
   {
+    "id": "q_poly_med1",
+    "topic_id": "topic2a",
+    "question_text": "The number of polynomials having zeroes as -2 and 5 is:",
+    "question_type": "MCQ",
+    "options": [
+      { "text": "1", "is_correct": false },
+      { "text": "2", "is_correct": false },
+      { "text": "3", "is_correct": false },
+      { "text": "more than 3", "is_correct": true }
+    ],
+    "answer": {
+      "explanation": "A polynomial with zeroes -2 and 5 can be written as \\(k(x - (-2))(x - 5) = k(x+2)(x-5)\\), where \\(k\\) is any non-zero real number. Since \\(k\\) can take infinitely many values, there are infinitely many (more than 3) such polynomials."
+    },
+    "difficulty_level": "MEDIUM",
+    "tags": ["polynomials", "zeros", "formation of polynomial"]
+  },
+  {
+    "id": "q_poly_hard1",
+    "topic_id": "topic2a",
+    "question_text": "If the zeroes of the polynomial \\(x^3 - 3x^2 + x + 1\\) are \\(a-b, a, a+b\\), find \\(a\\) and \\(b\\).",
+    "question_type": "TEXT_INPUT",
+    "answer": {
+      "correct_answer_text": "a=1, b=±√2",
+      "explanation": "For a cubic polynomial \\(Ax^3+Bx^2+Cx+D\\), sum of zeroes \\(= -(B/A)\\). So, \\((a-b) + a + (a+b) = -(-3)/1 \\Rightarrow 3a = 3 \\Rightarrow a=1\\). Product of zeroes \\(= -(D/A)\\). So, \\((a-b)a(a+b) = -(1)/1 \\Rightarrow (1-b)(1)(1+b) = -1 \\Rightarrow 1 - b^2 = -1 \\Rightarrow b^2 = 2 \\Rightarrow b = \\pm\\sqrt{2}\\)."
+    },
+    "difficulty_level": "HARD",
+    "tags": ["cubic polynomial", "zeros", "relationship coefficients"]
+  },
+  {
     "id": "q2",
     "topic_id": "topic2c",
     "question_text": "The roots of the quadratic equation \\(2x^2 - x - 6 = 0\\) are:",
