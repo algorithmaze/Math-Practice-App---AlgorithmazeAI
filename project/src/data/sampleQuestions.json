@@ -1,0 +1,142 @@
+[
+  {
+    "id": "q1",
+    "topic_id": "topic2a",
+    "question_text": "If one zero of the quadratic polynomial \\(x^2 + 3x + k\\) is 2, then the value of \\(k\\) is:",
+    "question_type": "MCQ",
+    "options": [
+      { "text": "10", "is_correct": false },
+      { "text": "-10", "is_correct": true },
+      { "text": "5", "is_correct": false },
+      { "text": "-5", "is_correct": false }
+    ],
+    "answer": {
+      "explanation": "If 2 is a zero, then substituting \\(x=2\\) into \\(x^2 + 3x + k = 0\\) should satisfy the equation. So, \\(2^2 + 3(2) + k = 0 \\Rightarrow 4 + 6 + k = 0 \\Rightarrow 10 + k = 0 \\Rightarrow k = -10\\)."
+    },
+    "difficulty_level": "EASY",
+    "tags": ["zeros of polynomial", "coefficients"]
+  },
+  {
+    "id": "q_poly_med1",
+    "topic_id": "topic2a",
+    "question_text": "The number of polynomials having zeroes as -2 and 5 is:",
+    "question_type": "MCQ",
+    "options": [
+      { "text": "1", "is_correct": false },
+      { "text": "2", "is_correct": false },
+      { "text": "3", "is_correct": false },
+      { "text": "more than 3", "is_correct": true }
+    ],
+    "answer": {
+      "explanation": "A polynomial with zeroes -2 and 5 can be written as \\(k(x - (-2))(x - 5) = k(x+2)(x-5)\\), where \\(k\\) is any non-zero real number. Since \\(k\\) can take infinitely many values, there are infinitely many (more than 3) such polynomials."
+    },
+    "difficulty_level": "MEDIUM",
+    "tags": ["polynomials", "zeros", "formation of polynomial"]
+  },
+  {
+    "id": "q_poly_hard1",
+    "topic_id": "topic2a",
+    "question_text": "If the zeroes of the polynomial \\(x^3 - 3x^2 + x + 1\\) are \\(a-b, a, a+b\\), find \\(a\\) and \\(b\\).",
+    "question_type": "TEXT_INPUT",
+    "answer": {
+      "correct_answer_text": "a=1, b=±√2",
+      "explanation": "For a cubic polynomial \\(Ax^3+Bx^2+Cx+D\\), sum of zeroes \\(= -(B/A)\\). So, \\((a-b) + a + (a+b) = -(-3)/1 \\Rightarrow 3a = 3 \\Rightarrow a=1\\). Product of zeroes \\(= -(D/A)\\). So, \\((a-b)a(a+b) = -(1)/1 \\Rightarrow (1-b)(1)(1+b) = -1 \\Rightarrow 1 - b^2 = -1 \\Rightarrow b^2 = 2 \\Rightarrow b = \\pm\\sqrt{2}\\)."
+    },
+    "difficulty_level": "HARD",
+    "tags": ["cubic polynomial", "zeros", "relationship coefficients"]
+  },
+  {
+    "id": "q2",
+    "topic_id": "topic2c",
+    "question_text": "The roots of the quadratic equation \\(2x^2 - x - 6 = 0\\) are:",
+    "question_type": "MCQ",
+    "options": [
+      { "text": "\\(2, -3/2\\)", "is_correct": true },
+      { "text": "\\(-2, 3/2\\)", "is_correct": false },
+      { "text": "\\(2, 3/2\\)", "is_correct": false },
+      { "text": "\\(-2, -3/2\\)", "is_correct": false }
+    ],
+    "answer": {
+      "explanation": "Using the quadratic formula \\(x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}\\) with \\(a=2, b=-1, c=-6\\). Discriminant \\(D = (-1)^2 - 4(2)(-6) = 1 + 48 = 49\\). So, \\(x = \\frac{1 \\pm \\sqrt{49}}{4} = \\frac{1 \\pm 7}{4}\\). Roots are \\(x_1 = \\frac{1+7}{4} = \\frac{8}{4} = 2\\) and \\(x_2 = \\frac{1-7}{4} = \\frac{-6}{4} = -3/2\\)."
+    },
+    "difficulty_level": "MEDIUM",
+    "tags": ["quadratic formula", "roots"]
+  },
+  {
+    "id": "q3",
+    "topic_id": "topic4b",
+    "question_text": "In the given figure, if PA and PB are tangents to the circle with centre O such that \\(\\angle APB = 50^\\circ\\), then \\(\\angle OAB\\) is equal to:",
+    "question_type": "IMAGE_BASED",
+    "image_prompt": "A circle with centre O. From an external point P, two tangents PA and PB are drawn to the circle. Angle APB is shown as 50 degrees. Join OA and OB. We need to find angle OAB. OA is perpendicular to PA, OB is perpendicular to PB. In quadrilateral PAOB, angle AOB = 360 - (90+90+50) = 130 degrees. In triangle OAB, OA=OB (radii), so it's an isosceles triangle. Angle OAB = Angle OBA = (180-130)/2 = 25 degrees.",
+    "image_url": "placeholder_circle_tangents.png",
+    "options": [
+      { "text": "\\(25^\\circ\\)", "is_correct": true },
+      { "text": "\\(30^\\circ\\)", "is_correct": false },
+      { "text": "\\(40^\\circ\\)", "is_correct": false },
+      { "text": "\\(50^\\circ\\)", "is_correct": false }
+    ],
+    "answer": {
+      "explanation": "Since PA and PB are tangents, \\(OA \\perp PA\\) and \\(OB \\perp PB\\). Thus, \\(\\angle OAP = \\angle OBP = 90^\\circ\\). In quadrilateral PAOB, \\(\\angle AOB + \\angle OBP + \\angle APB + \\angle OAP = 360^\\circ\\). So, \\(\\angle AOB + 90^\\circ + 50^\\circ + 90^\\circ = 360^\\circ \\Rightarrow \\angle AOB = 130^\\circ\\). In \\(\\triangle OAB\\), OA = OB (radii), so it's an isosceles triangle. \\(\\angle OAB = \\angle OBA = (180^\\circ - 130^\\circ)/2 = 25^\\circ\\)."
+    },
+    "difficulty_level": "MEDIUM",
+    "tags": ["circles", "tangents", "angles"]
+  },
+  {
+    "id": "q4",
+    "topic_id": "topic4a",
+    "question_text": "**Assertion (A):** If two sides of a right triangle are \\(3\\) cm and \\(4\\) cm, then its hypotenuse is \\(5\\) cm. \n**Reason (R):** In a right triangle, the square of the hypotenuse is equal to the sum of the squares of the other two sides (Pythagoras theorem).",
+    "question_type": "ASSERTION_REASONING",
+    "options": [
+      { "text": "Both A and R are true and R is the correct explanation of A.", "is_correct": true },
+      { "text": "Both A and R are true but R is not the correct explanation of A.", "is_correct": false },
+      { "text": "A is true but R is false.", "is_correct": false },
+      { "text": "A is false but R is true.", "is_correct": false }
+    ],
+    "answer": {
+      "explanation": "Assertion (A): By Pythagoras theorem, if sides are 3 and 4, hypotenuse \\(h = \\sqrt{3^2 + 4^2} = \\sqrt{9+16} = \\sqrt{25} = 5\\) cm. So, A is true. Reason (R) is the statement of Pythagoras theorem, which is true and is the correct explanation for A."
+    },
+    "difficulty_level": "HARD",
+    "tags": ["pythagoras theorem", "triangles", "assertion-reasoning"]
+  },
+  {
+    "id": "q5",
+    "topic_id": "topic2d",
+    "question_text": "A sum of ₹700 is to be used to give seven cash prizes to students of a school for their overall academic performance. If each prize is ₹20 less than its preceding prize, find the value of each of the prizes.",
+    "question_type": "TEXT_INPUT",
+    "answer": {
+      "correct_answer_text": "₹160, ₹140, ₹120, ₹100, ₹80, ₹60, ₹40",
+      "explanation": "Let the prizes be \\(a, a-20, a-40, \dots\\) (7 terms). This is an AP with first term \\(a\\) and common difference \\(d = -20\\). Sum \\(S_7 = 700\\). \\(S_n = \\frac{n}{2}[2a + (n-1)d]\\). So, \\(700 = \\frac{7}{2}[2a + (7-1)(-20)] \\Rightarrow 100 = \\frac{1}{2}[2a - 120] \\Rightarrow 200 = 2a - 120 \\Rightarrow 2a = 320 \\Rightarrow a = 160\\). The prizes are ₹160, ₹140, ₹120, ₹100, ₹80, ₹60, ₹40."
+    },
+    "difficulty_level": "HARD",
+    "tags": ["arithmetic progression", "sum of AP", "word problem"]
+  },
+  {
+    "id": "q6",
+    "topic_id": "topic1a",
+    "question_text": "The decimal expansion of the rational number \\(\\frac{14587}{1250}\\) will terminate after how many decimal places?",
+    "question_type": "TEXT_INPUT",
+    "answer": {
+        "correct_answer_text": "4",
+        "explanation": "For a rational number \\(\\frac{p}{q}\\) to have a terminating decimal expansion, the prime factorization of \\(q\\) must be of the form \\(2^n 5^m\\), where \\(n, m\\) are non-negative integers. The number of decimal places it terminates after is \\(\\max(n,m)\\). Here, \\(q = 1250 = 125 \\times 10 = 5^3 \\times (2 \\times 5) = 2^1 \\times 5^4\\). So, \\(n=1, m=4\\). The expansion will terminate after \\(\\max(1,4) = 4\\) decimal places."
+    },
+    "difficulty_level": "EASY",
+    "tags": ["real numbers", "decimal expansion", "rational numbers"]
+  },
+  {
+    "id": "q7",
+    "topic_id": "topic7b",
+    "question_text": "A die is thrown once. What is the probability of getting a prime number?",
+    "question_type": "MCQ",
+    "options": [
+      { "text": "\\(1/2\\)", "is_correct": true },
+      { "text": "\\(1/3\\)", "is_correct": false },
+      { "text": "\\(2/3\\)", "is_correct": false },
+      { "text": "\\(1/6\\)", "is_correct": false }
+    ],
+    "answer": {
+      "explanation": "When a die is thrown, the possible outcomes are \\(\{1, 2, 3, 4, 5, 6\}\\). Total outcomes = 6. The prime numbers are \\(\{2, 3, 5\}\\). Number of favorable outcomes = 3. Probability = (Number of favorable outcomes) / (Total number of outcomes) = \\(3/6 = 1/2\\)."
+    },
+    "difficulty_level": "EASY",
+    "tags": ["probability", "prime numbers", "dice"]
+  }
+]

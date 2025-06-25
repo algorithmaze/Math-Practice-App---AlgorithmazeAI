@@ -16,19 +16,23 @@ const LoginScreen: React.FC = () => {
     setError('');
 
     try {
-      const response = await axios.post('/api/users/login', {
-        email,
+      // const response = await axios.post('/api/users/login', { // Original
+      const response = await axios.post('http://localhost:5001/api/auth/login', {
+        emailOrUsername: email, // Backend expects emailOrUsername
         password
       });
       
-      // Store user data in localStorage (in production, use proper token management)
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+      // Store token and user data (adjust based on actual backend response)
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify({ _id: response.data._id, username: response.data.username, email: response.data.email }));
+      axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`; // Set auth header for subsequent requests
       navigate('/dashboard');
-    } catch (error) {
-      console.error('Login error:', error);
-      setError('Invalid email or password');
-      // For development, allow bypass
-      navigate('/dashboard');
+    } catch (err: any) {
+      console.error('Login error:', err);
+      const message = err.response?.data?.message || 'Invalid email or password';
+      setError(message);
+      // Remove development bypass for actual testing
+      // navigate('/dashboard');
     } finally {
       setLoading(false);
     }

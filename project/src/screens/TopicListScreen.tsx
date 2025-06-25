@@ -1,104 +1,103 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, BookOpen } from 'lucide-react';
-import axios from 'axios';
+import { ArrowLeft, Play, BookOpen, AlertTriangle } from 'lucide-react';
+import axios from 'axios'; // Now needed for API calls
+// import syllabusData from '../data/syllabus.json'; // Will be replaced by API call
 
-interface Topic {
-  topic_id: number;
-  topic_name: string;
-  mastery_score: number;
-  questions_completed: number;
-  total_questions: number;
+interface ApiTopic {
+  _id: string; // MongoDB ObjectId
+  name: string;
+  description?: string;
+  unit_id: string; // Reference to SyllabusUnit _id
+  order?: number;
+  // mastery_score, etc. can be added later
 }
+
+interface ApiSyllabusUnit { // For fetching unit name
+  _id: string;
+  name: string;
+}
+
 
 const TopicListScreen: React.FC = () => {
   const { unitId } = useParams<{ unitId: string }>();
   const navigate = useNavigate();
-  const [topics, setTopics] = useState<Topic[]>([]);
+  const [topics, setTopics] = useState<ApiTopic[]>([]);
   const [unitName, setUnitName] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchTopics();
+    if (unitId) {
+      fetchUnitDetailsAndTopics();
+    } else {
+      setError("No Unit ID provided.");
+      setLoading(false);
+    }
   }, [unitId]);
 
-  const fetchTopics = async () => {
+  const fetchUnitDetailsAndTopics = async () => {
+    setLoading(true);
+    setError(null);
+    if (!unitId) return;
+
     try {
-      const response = await axios.get(`/api/topics/${unitId}`);
-      setTopics(response.data.topics);
-      setUnitName(response.data.unit_name);
-    } catch (error) {
-      console.error('Error fetching topics:', error);
-      // Mock data for development
-      const mockTopics = getTopicsForUnit(parseInt(unitId || '1'));
-      setTopics(mockTopics);
-      setUnitName(getUnitName(parseInt(unitId || '1')));
+      const token = localStorage.getItem('token'); // Assuming routes might be protected
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+
+      // Fetch Unit Name (Optional: could also pass from DashboardScreen via route state)
+      // For now, assuming a direct API endpoint for a single unit, or adjust if not available
+      // If /api/syllabus/units/:unitId exists and returns unit details:
+      try {
+        const unitResponse = await axios.get(`/api/syllabus/units/${unitId}`, config); // Placeholder: This endpoint for single unit detail doesn't exist yet.
+                                                                                      // The current /api/syllabus/units returns all units.
+                                                                                      // We'll filter from all units for now, or rely on topic API to return unit name if designed that way.
+                                                                                      // For now, let's assume we fetch all units and find the name.
+        const allUnitsResponse = await axios.get('/api/syllabus/units', config);
+        const currentUnit = allUnitsResponse.data.find((u: ApiSyllabusUnit) => u._id === unitId);
+        if (currentUnit) {
+          setUnitName(currentUnit.name);
+        } else {
+          setUnitName('Unit details not found'); // Fallback if unit name can't be fetched
+        }
+      } catch (unitError) {
+        console.error('Error fetching unit name:', unitError);
+        setUnitName('Unit'); // Default name on error
+      }
+
+
+      // Fetch Topics for the unit
+      const topicsResponse = await axios.get(`/api/syllabus/units/${unitId}/topics`, config);
+      setTopics(topicsResponse.data);
+
+    } catch (err: any) {
+      console.error('Error fetching topics:', err);
+      if (err.response && err.response.status === 401) {
+        navigate('/login', {state: {message: "Session expired. Please login."}});
+        return;
+      }
+       if (err.response && err.response.status === 404) {
+        setError(`Topics not found for this unit or unit does not exist.`);
+        setTopics([]); // Clear topics if unit not found
+      } else {
+        setError('Failed to load topics. Please try again later.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const getUnitName = (unitId: number) => {
-    const units = [
-      'Number Systems',
-      'Algebra', 
-      'Coordinate Geometry',
-      'Geometry',
-      'Trigonometry',
-      'Mensuration',
-      'Statistics and Probability'
-    ];
-    return units[unitId - 1] || 'Unknown Unit';
-  };
-
-  const getTopicsForUnit = (unitId: number): Topic[] => {
-    const topicsByUnit: { [key: number]: Topic[] } = {
-      1: [
-        { topic_id: 1, topic_name: 'Real Numbers', mastery_score: 0.8, questions_completed: 24, total_questions: 30 },
-        { topic_id: 2, topic_name: 'Irrational Numbers', mastery_score: 0.6, questions_completed: 18, total_questions: 30 },
-        { topic_id: 3, topic_name: 'Rational Numbers', mastery_score: 0.9, questions_completed: 27, total_questions: 30 }
-      ],
-      2: [
-        { topic_id: 4, topic_name: 'Polynomials', mastery_score: 0.7, questions_completed: 21, total_questions: 30 },
-        { topic_id: 5, topic_name: 'Linear Equations in Two Variables', mastery_score: 0.5, questions_completed: 15, total_questions: 30 },
-        { topic_id: 6, topic_name: 'Quadratic Equations', mastery_score: 0.4, questions_completed: 12, total_questions: 30 },
-        { topic_id: 7, topic_name: 'Arithmetic Progressions', mastery_score: 0.6, questions_completed: 18, total_questions: 30 }
-      ],
-      3: [
-        { topic_id: 8, topic_name: 'Lines (In two-dimensions)', mastery_score: 0.3, questions_completed: 9, total_questions: 30 },
-        { topic_id: 9, topic_name: 'Distance Formula', mastery_score: 0.5, questions_completed: 15, total_questions: 30 },
-        { topic_id: 10, topic_name: 'Section Formula', mastery_score: 0.4, questions_completed: 12, total_questions: 30 }
-      ],
-      4: [
-        { topic_id: 11, topic_name: 'Triangles', mastery_score: 0.2, questions_completed: 6, total_questions: 30 },
-        { topic_id: 12, topic_name: 'Circles', mastery_score: 0.3, questions_completed: 9, total_questions: 30 },
-        { topic_id: 13, topic_name: 'Constructions', mastery_score: 0.4, questions_completed: 12, total_questions: 30 }
-      ],
-      5: [
-        { topic_id: 14, topic_name: 'Introduction to Trigonometry', mastery_score: 0.1, questions_completed: 3, total_questions: 30 },
-        { topic_id: 15, topic_name: 'Trigonometric Identities', mastery_score: 0.2, questions_completed: 6, total_questions: 30 },
-        { topic_id: 16, topic_name: 'Heights and Distances', mastery_score: 0.3, questions_completed: 9, total_questions: 30 }
-      ],
-      6: [
-        { topic_id: 17, topic_name: 'Areas Related to Circles', mastery_score: 0.1, questions_completed: 3, total_questions: 30 },
-        { topic_id: 18, topic_name: 'Surface Areas and Volumes', mastery_score: 0.1, questions_completed: 3, total_questions: 30 }
-      ],
-      7: [
-        { topic_id: 19, topic_name: 'Statistics', mastery_score: 0.05, questions_completed: 1, total_questions: 30 },
-        { topic_id: 20, topic_name: 'Probability', mastery_score: 0.05, questions_completed: 1, total_questions: 30 }
-      ]
-    };
-    return topicsByUnit[unitId] || [];
-  };
-
-  const getProgressColor = (score: number) => {
+  // These functions can be simplified or removed if mastery is not shown yet
+  const getProgressColor = (score?: number) => {
+    if (score === undefined) return 'bg-gray-300';
     if (score >= 0.8) return 'bg-green-500';
     if (score >= 0.6) return 'bg-blue-500';
     if (score >= 0.4) return 'bg-yellow-500';
     return 'bg-red-500';
   };
 
-  const getMasteryText = (score: number) => {
+  const getMasteryText = (score?: number) => {
+    if (score === undefined) return 'Not Started';
     if (score >= 0.8) return 'Mastered';
     if (score >= 0.6) return 'Good';
     if (score >= 0.4) return 'Learning';
@@ -130,7 +129,7 @@ const TopicListScreen: React.FC = () => {
                 <BookOpen className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{unitName}</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{unitName || 'Topics'}</h1>
                 <p className="text-sm text-gray-600">Choose a topic to practice</p>
               </div>
             </div>
@@ -139,59 +138,54 @@ const TopicListScreen: React.FC = () => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Unit Overview */}
+        {/* Unit Overview - Temporarily simplified */}
         <div className="card p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-blue-600">{topics.length}</p>
-              <p className="text-gray-600">Topics</p>
-            </div>
-            <div className="text-center">
-              <p className="text-3xl font-bold text-green-600">
-                {topics.filter(t => t.mastery_score >= 0.8).length}
-              </p>
-              <p className="text-gray-600">Mastered</p>
-            </div>
-            <div className="text-center">
-              <p className="text-3xl font-bold text-yellow-600">
-                {Math.round((topics.reduce((sum, t) => sum + t.mastery_score, 0) / topics.length) * 100)}%
-              </p>
-              <p className="text-gray-600">Overall Progress</p>
-            </div>
+          <div className="text-center">
+            <p className="text-3xl font-bold text-blue-600">{topics.length}</p>
+            <p className="text-gray-600">Topics Available</p>
           </div>
         </div>
 
+        {error && (
+          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+            <div className="flex">
+              <div className="py-1"><AlertTriangle className="h-6 w-6 text-red-500 mr-3" /></div>
+              <div>
+                <p className="font-bold">Error</p>
+                <p className="text-sm">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Topics List */}
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Topics</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Topics in {unitName || 'this unit'}</h2>
+          {!loading && !error && topics.length === 0 && (
+            <div className="text-center py-10 card">
+                <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900">No topics found</h3>
+                <p className="mt-1 text-sm text-gray-500">There are no topics available for this unit yet.</p>
+             </div>
+          )}
           {topics.map((topic) => (
-            <div key={topic.topic_id} className="card p-6">
+            <div key={topic._id} className="card p-6"> {/* Use topic._id from API */}
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-3">
+                  <div className="flex items-center space-x-3 mb-1">
                     <h3 className="text-lg font-semibold text-gray-900">
-                      {topic.topic_name}
+                      {topic.name} {/* Use topic.name from API */}
                     </h3>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium text-white ${getProgressColor(topic.mastery_score)}`}>
-                      {getMasteryText(topic.mastery_score)}
-                    </span>
+                    {/* Mastery text removed for now */}
                   </div>
-                  
-                  <div className="flex items-center space-x-6 text-sm text-gray-600 mb-3">
-                    <span>{topic.questions_completed}/{topic.total_questions} questions completed</span>
-                    <span>{Math.round(topic.mastery_score * 100)}% mastery</span>
-                  </div>
-                  
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full progress-bar ${getProgressColor(topic.mastery_score)}`}
-                      style={{ width: `${topic.mastery_score * 100}%` }}
-                    ></div>
-                  </div>
+                  {topic.description && (
+                    <p className="text-sm text-gray-500 mb-3">{topic.description}</p>
+                  )}
+                  {/* Progress related elements removed for now */}
                 </div>
                 
                 <Link
-                  to={`/practice/${topic.topic_id}`}
+                  to={`/practice/${topic._id}`} // Use topic._id from API
                   className="ml-6 flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   <Play className="w-5 h-5" />

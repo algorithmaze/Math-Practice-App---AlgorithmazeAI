@@ -2,38 +2,60 @@ import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, ArrowRight, Home, Lightbulb } from 'lucide-react';
 import { InlineMath, BlockMath } from 'react-katex';
+import 'katex/dist/katex.min.css'; // Ensure KaTeX CSS is imported
 
-interface FeedbackState {
+// Matches the state sent from PracticeScreen
+interface FeedbackNavigationState {
   isCorrect: boolean;
   explanation: string;
-  pointsEarned: number;
-  correctOption: string;
-  selectedOption: string;
-  question: any;
+  questionText: string;
+  userAnswer: string; // Text of the user's answer
+  correctAnswer: string; // Text of the correct answer
+  questionType: "MCQ" | "ASSERTION_REASONING" | "CASE_STUDY" | "IMAGE_BASED" | "TEXT_INPUT";
+  options?: Array<{ text: string, is_correct?: boolean }>; // For displaying MCQ options again
+  selectedOptionIndex?: number; // For highlighting user's MCQ choice
   topicId: string;
+  // pointsEarned can be added later
 }
 
 const FeedbackScreen: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const state = location.state as FeedbackState;
+  const state = location.state as FeedbackNavigationState | null; // Allow null initially
 
   useEffect(() => {
-    // Play audio feedback
     if (state?.isCorrect) {
-      // In a real app, you would play a "Very Good!" robotic voice here
       console.log('🤖 Very Good!');
+      // Future: Play sound "Very Good!"
+    } else if (state) { // only log if state exists but is incorrect
+      console.log('🤖 Better luck next time!');
+      // Future: Play sound "Try again" or similar
     }
-  }, [state?.isCorrect]);
+  }, [state]);
 
   if (!state) {
-    navigate('/dashboard');
+    // If state is missing, redirect to dashboard or show an error
+    useEffect(() => {
+      navigate('/dashboard', { replace: true });
+    }, [navigate]);
     return null;
   }
 
-  const { isCorrect, explanation, pointsEarned, correctOption, selectedOption, question, topicId } = state;
+  const {
+    isCorrect,
+    explanation,
+    questionText,
+    userAnswer,
+    correctAnswer,
+    // questionType, // Can be used for conditional rendering if needed
+    // options,
+    // selectedOptionIndex,
+    topicId
+  } = state;
+  // const pointsEarned = 0; // Placeholder
 
   const handleNextQuestion = () => {
+    // This will currently reload the same first easy question for the topic
     navigate(`/practice/${topicId}`);
   };
 
@@ -81,43 +103,44 @@ const FeedbackScreen: React.FC = () => {
             )}
           </div>
 
-          {/* Points Earned */}
-          {pointsEarned > 0 && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-              <p className="text-yellow-800 font-medium">
-                +{pointsEarned} points earned!
-              </p>
+          {/* Points Earned - Placeholder for now */}
+          {/* {pointsEarned > 0 && ( ... ) } */}
+
+          {/* Question Display */}
+          <div className="bg-gray-100 rounded-lg p-4 mb-6 text-left">
+            <h3 className="font-semibold text-gray-700 mb-2">Question:</h3>
+            <div className="text-gray-800 text-md">
+              <BlockMath math={questionText} />
             </div>
-          )}
+          </div>
 
           {/* Answer Summary */}
           <div className="bg-gray-50 rounded-lg p-6 mb-6 text-left">
-            <h3 className="font-semibold text-gray-900 mb-3">Answer Summary</h3>
-            <div className="space-y-2 text-sm">
-              <p>
-                <span className="text-gray-600">Your answer:</span>{' '}
-                <span className={`font-medium ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
-                  {selectedOption}
+            <h3 className="font-semibold text-gray-900 mb-3">Your Attempt</h3>
+            <div className="space-y-2 text-md">
+              <div className="flex items-start">
+                <span className="text-gray-600 w-32 shrink-0">Your answer:</span>
+                <span className={`font-medium ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
+                  <InlineMath math={userAnswer} />
                 </span>
-              </p>
-              <p>
-                <span className="text-gray-600">Correct answer:</span>{' '}
-                <span className="font-medium text-green-600">{correctOption}</span>
-              </p>
+              </div>
+              {!isCorrect && (
+                <div className="flex items-start">
+                  <span className="text-gray-600 w-32 shrink-0">Correct answer:</span>
+                  <span className="font-medium text-green-700">
+                     <InlineMath math={correctAnswer} />
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Explanation */}
           <div className="bg-blue-50 rounded-lg p-6 mb-6 text-left">
             <h3 className="font-semibold text-blue-900 mb-3">Explanation</h3>
-            <div className="text-blue-800 text-sm leading-relaxed">
-              {explanation.includes('$') ? (
-                <div dangerouslySetInnerHTML={{ 
-                  __html: explanation.replace(/\$([^$]+)\$/g, '<span class="katex-inline">$1</span>') 
-                }} />
-              ) : (
-                <p>{explanation}</p>
-              )}
+            <div className="text-blue-800 text-md leading-relaxed prose prose-sm max-w-none">
+              {/* Assuming explanation is already KaTeX formatted or plain text */}
+              <BlockMath math={explanation} errorColor={'#cc0000'} />
             </div>
           </div>
 
